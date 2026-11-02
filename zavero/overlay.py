@@ -51,6 +51,7 @@ MOODS = {
     "hold": QColor("#B8733A"),  # waits for the user (guide step, question): never fades by itself
 }
 TARGET = QColor("#FFB020")
+POINTER = ("#FFC94D", "#FF7A1A")  # pointer + name tag gradient: warm amber -> orange
 # Teacher pens for diagram explanations (talk.COLORS)
 PENS = {"red": "#E53935", "blue": "#1E66F5", "green": "#1F9D55", "orange": "#F59E0B", "purple": "#8E44AD"}
 STEP_S = 3.2  # seconds per explained step: ~1.3 s to draw, the rest to read the caption
@@ -475,6 +476,7 @@ class Overlay(QWidget):
         self._thinking = False
         self._avatar = QPointF(self._home)
         self._target: QPointF | None = None
+        self._target_at = -99.0  # when the pointer appeared (it glides in)
         self._text = ""
         self._mood = "info"
         self._mode = "Guide"
@@ -864,6 +866,7 @@ class Overlay(QWidget):
 
     def _on_point(self, x: int, y: int) -> None:
         self._target = self.local(x, y)
+        self._target_at = self._t  # the pointer glides in from here
         self._label = ""
         self._keys, self._arrow = [], None
         if self._drag is None:
@@ -1095,7 +1098,7 @@ class Overlay(QWidget):
             t, a = self._target, self._avatar
             reach = 0.15 * math.hypot(t.x() - a.x(), t.y() - a.y()) + 40
             box = QRectF(t, a).normalized().adjusted(-reach, -reach, reach, reach)
-            box = box.united(QRectF(t.x() - 280, t.y() - 30, 560, 60))  # label chip, either side
+            box = box.united(QRectF(t.x() - 300, t.y() - 70, 600, 140))  # name tag, any side
             add(box)
             add(self._target_last)
             self._target_last = box
@@ -1218,75 +1221,99 @@ class Overlay(QWidget):
                 x += plus
 
     def _paint_target(self, p: QPainter) -> None:
-        """A bold arrow whose tip touches the exact spot (more precise than a ring around it), coming from
-        Chai's side and gently tapping toward the target, plus a dashed trail back to Chai."""
+        """Modern "live cursor" pointer: a sleek gradient arrowhead whose tip sits exactly on the spot, soft
+        ripples from that spot, and a name tag beside it. Glides in with a springy ease, then gently breathes
+        (the tip never moves, so it stays pin-pointed)."""
         t, a = self._target, self._avatar
         d = t - a
         dist = math.hypot(d.x(), d.y())
         ux, uy = (d.x() / dist, d.y() / dist) if dist > 1 else (0.6, 0.8)  # from Chai toward the target
-        tap = 4 + 4 * math.sin(self._t * 6)       # tip stays on the spot, the arrow taps toward it
-        tip = t - QPointF(ux, uy) * 7  # the tip touches the bullseye
-        tail = t - QPointF(ux, uy) * (74 + tap)
-        nx, ny = -uy, ux
-        head_len, half, shaft = 28, 17, 6.5
-        neck = tip - QPointF(ux, uy) * head_len
-        glow = QColor(TARGET)
-        glow.setAlpha(55)
-        p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(glow)
-        p.drawEllipse(t, 9 + tap * 0.6, 9 + tap * 0.6)  # soft glow around the exact spot
-        p.setPen(QPen(QColor("white"), 2))  # bullseye: the exact pixel the arrow means
-        p.setBrush(TARGET)
-        p.drawEllipse(t, 4.5, 4.5)
-        p.setPen(Qt.PenStyle.NoPen)
-        arrow = QPainterPath(tail + QPointF(nx, ny) * shaft)
-        arrow.lineTo(neck + QPointF(nx, ny) * shaft)
-        arrow.lineTo(neck + QPointF(nx, ny) * half)
-        arrow.lineTo(tip)
-        arrow.lineTo(neck - QPointF(nx, ny) * half)
-        arrow.lineTo(neck - QPointF(nx, ny) * shaft)
-        arrow.lineTo(tail - QPointF(nx, ny) * shaft)
-        arrow.closeSubpath()
-        p.setBrush(QColor(15, 23, 42, 45))
-        p.drawPath(arrow.translated(2, 3))  # shadow
-        p.setPen(QPen(QColor("white"), 2.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
-        p.setBrush(TARGET)
-        p.drawPath(arrow)
-        if dist > R + 90:  # dashed trail from Chai to the arrow
-            start = a + d * (R / dist)
-            mid = (start + tail) / 2 + QPointF(-d.y(), d.x()) * 0.12
-            path = QPainterPath(start)
-            path.quadTo(mid, tail)
-            pen = QPen(TARGET, 2, Qt.PenStyle.DashLine)
-            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-            p.setPen(pen)
-            p.setBrush(Qt.BrushStyle.NoBrush)
-            p.drawPath(path)
-        if self._label:
-            self._paint_label(p, t, 16)
+        age = self._t - self._target_at
+        e = ease_out_back(min(1.0, age / 0.38))
+        scale = (0.55 + 0.45 * e) * (1 + 0.035 * math.sin(self._t * 3.2))
+        slide = 18 * (1 - min(1.0, age / 0.38))  # glides in along its direction
 
-    def _paint_label(self, p: QPainter, t: QPointF, pulse: float) -> None:
-        """Dark pill beside the ring with the thing's name, typed letter by letter."""
+        # ripples from the exact spot
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        for k in range(2):
+            ph = (age * 0.85 + k * 0.5) % 1.0
+            ring = QColor(POINTER[1])
+            ring.setAlphaF(0.55 * (1 - ph) * min(1.0, age / 0.3))
+            p.setPen(QPen(ring, 2))
+            r = 6 + 24 * (1 - (1 - ph) ** 2)
+            p.drawEllipse(t, r, r)
+        p.setPen(QPen(QColor("white"), 2))
+        p.setBrush(QColor(POINTER[1]))
+        p.drawEllipse(t, 3.6, 3.6)  # the exact pixel
+
+        # the pointer, drawn with its tip at (0, 0) facing +x, then turned toward the target
+        shape = QPainterPath(QPointF(0, 0))
+        shape.lineTo(-42, -19)
+        shape.quadTo(-35, -6, -29, 0)   # soft notch
+        shape.quadTo(-35, 6, -42, 19)
+        shape.closeSubpath()
+        turn = QTransform()
+        turn.translate(t.x() - ux * (4.5 + slide), t.y() - uy * (4.5 + slide))  # tip just touches the dot
+        turn.rotate(math.degrees(math.atan2(uy, ux)))
+        turn.scale(scale, scale)
+        p.setPen(Qt.PenStyle.NoPen)
+        on_screen = turn.map(shape)
+        for dy, grow, al in ((5, 2.5, 14), (3, 1.5, 22), (1.5, 0.5, 30)):  # soft shadow, always falling down
+            p.setBrush(QColor(15, 23, 42, al))
+            p.drawPath(on_screen.translated(0.5, dy))
+        p.save()
+        p.setTransform(turn, True)
+        grad = QLinearGradient(QPointF(-42, -19), QPointF(0, 8))
+        grad.setColorAt(0, QColor(POINTER[0]))
+        grad.setColorAt(1, QColor(POINTER[1]))
+        p.setPen(QPen(QColor("white"), 2.2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+        p.setBrush(QBrush(grad))
+        p.drawPath(shape)
+        shine = QPainterPath(QPointF(-8, -3.2))  # thin highlight along the upper edge
+        shine.lineTo(-34, -15)
+        p.setPen(QPen(QColor(255, 255, 255, 120), 1.4, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        p.drawPath(shine)
+        p.restore()
+        if self._label:
+            self._paint_label(p, t, ux, uy, e)
+
+    def _paint_label(self, p: QPainter, t: QPointF, ux: float, uy: float, e: float) -> None:
+        """Name tag beside the pointer (the side away from Chai), in the pointer's colours, typed letter by
+        letter, popping in with it."""
         age = self._t - self._label_born
         shown = self._label[:sum(1 for at in self._label_at if at <= age)]
         if not shown:
             return
-        font = ui_font(9, bold=True)
+        font = ui_font(9.5, bold=True)
         p.setFont(font)
-        full_w = p.fontMetrics().horizontalAdvance(self._label) + 22
-        w, h = p.fontMetrics().horizontalAdvance(shown) + 22, 26
-        right = self._avatar.x() <= t.x()  # the chip goes on the side away from Chai's arrow
-        x = t.x() + pulse + 12 if right else t.x() - pulse - 12 - full_w
-        if x + full_w > self.width() - 8 or x < 8:  # no room there: the other side
-            x = t.x() - pulse - 12 - full_w if right else t.x() + pulse + 12
-        box = QRectF(x, t.y() - h / 2, w, h)
+        fm = p.fontMetrics()
+        full_w = fm.horizontalAdvance(self._label) + 24
+        w, h = fm.horizontalAdvance(shown) + 24, 26
+        sx = 1 if ux >= 0 else -1  # pointer travels right (Chai on the left) -> tag on the right
+        sy = 1 if uy >= 0 else -1
+        x = t.x() + 16 if sx > 0 else t.x() - 16 - full_w
+        y = t.y() + 12 if sy > 0 else t.y() - 12 - h
+        x = min(max(x, 8), self.width() - full_w - 8)
+        y = min(max(y, 8), self.height() - h - 8)
+        box = QRectF(x if sx > 0 else x + full_w - w, y, w, h)
+        p.save()
+        o = QPointF(t)
+        p.translate(o)
+        p.scale(0.6 + 0.4 * e, 0.6 + 0.4 * e)
+        p.translate(-o)
         p.setPen(Qt.PenStyle.NoPen)
-        p.setBrush(QColor(15, 23, 42, 40))
-        p.drawRoundedRect(box.adjusted(-1, 1, 1, 3), h / 2, h / 2)
-        p.setBrush(QColor(15, 23, 42, 225))
+        for grow, al in ((3, 16), (1.5, 26)):
+            p.setBrush(QColor(15, 23, 42, al))
+            p.drawRoundedRect(box.adjusted(-grow / 2, grow, grow / 2, grow * 1.6), h / 2, h / 2)
+        grad = QLinearGradient(box.topLeft(), box.bottomRight())
+        grad.setColorAt(0, QColor(POINTER[0]))
+        grad.setColorAt(1, QColor(POINTER[1]))
+        p.setBrush(QBrush(grad))
+        p.setPen(QPen(QColor(255, 255, 255, 230), 1.5))
         p.drawRoundedRect(box, h / 2, h / 2)
         p.setPen(QColor("#FFFFFF"))
         p.drawText(box, Qt.AlignmentFlag.AlignCenter, shown)
+        p.restore()
 
     def _paint_avatar(self, p: QPainter) -> None:
         a = self._avatar
