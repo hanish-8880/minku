@@ -70,3 +70,25 @@ def test_yes_button_answers_the_question():
     o._waiting = False
     o.on_button("yes")
     assert o._answer is True and o._answered.is_set()
+
+
+def test_guide_arrow_snaps_to_the_exact_button(monkeypatch):
+    from zavero import driver, talk
+    from zavero.brain import Step
+
+    from test_interrupt import FakeUI
+
+    o = Orchestrator.__new__(Orchestrator)
+    o.ui, o.user_text, o._waiting, o._guide_token, o._snapped = FakeUI(), "pay bill", True, 7, {}
+    shot = driver.Shot("", 1280, 720, 1.5)
+    step = Step("c1", [{"type": "click", "x": 400, "y": 300}], text='I will click "Pay Bill".')
+    asked = []
+    monkeypatch.setattr(talk, "refine_point", lambda s, pt, what: asked.append(what) or {"x": 430, "y": 310})
+    o._snap_guide(step, shot, 7)
+    assert asked == ["Pay Bill"]                                   # looks for the quoted button
+    assert o._guide_target == (645, 465) and o._snapped[7] == (645, 465)
+    assert ("point_at", (645, 465)) in o.ui.log                     # the arrow moves to the exact spot
+    monkeypatch.setattr(talk, "refine_point", lambda s, pt, what: {"x": 900, "y": 600})
+    o._snapped = {}
+    o._snap_guide(step, shot, 7)
+    assert o._snapped == {}                                         # a far jump is a different button: ignored

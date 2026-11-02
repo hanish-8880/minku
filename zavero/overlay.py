@@ -1225,7 +1225,7 @@ class Overlay(QWidget):
         dist = math.hypot(d.x(), d.y())
         ux, uy = (d.x() / dist, d.y() / dist) if dist > 1 else (0.6, 0.8)  # from Chai toward the target
         tap = 4 + 4 * math.sin(self._t * 6)       # tip stays on the spot, the arrow taps toward it
-        tip = t - QPointF(ux, uy) * 2
+        tip = t - QPointF(ux, uy) * 7  # the tip touches the bullseye
         tail = t - QPointF(ux, uy) * (74 + tap)
         nx, ny = -uy, ux
         head_len, half, shaft = 28, 17, 6.5
@@ -1234,7 +1234,11 @@ class Overlay(QWidget):
         glow.setAlpha(55)
         p.setPen(Qt.PenStyle.NoPen)
         p.setBrush(glow)
-        p.drawEllipse(t, 7 + tap * 0.5, 7 + tap * 0.5)  # soft glow on the exact spot
+        p.drawEllipse(t, 9 + tap * 0.6, 9 + tap * 0.6)  # soft glow around the exact spot
+        p.setPen(QPen(QColor("white"), 2))  # bullseye: the exact pixel the arrow means
+        p.setBrush(TARGET)
+        p.drawEllipse(t, 4.5, 4.5)
+        p.setPen(Qt.PenStyle.NoPen)
         arrow = QPainterPath(tail + QPointF(nx, ny) * shaft)
         arrow.lineTo(neck + QPointF(nx, ny) * shaft)
         arrow.lineTo(neck + QPointF(nx, ny) * half)

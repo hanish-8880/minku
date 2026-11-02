@@ -1,6 +1,7 @@
 """Ties voice -> brain -> overlay -> driver together and holds session state."""
 import datetime
 import json
+import math
 import queue
 import re
 import threading
@@ -579,7 +580,7 @@ class Orchestrator:
         """Model screenshot with the avatar blanked out for a moment."""
         self.ui.hide_for_capture()
         try:
-            return driver.screenshot()
+            return driver.screenshot(keep_full=True)  # full resolution for the zoomed second look
         finally:
             self.ui.show_after_capture()
 
@@ -587,8 +588,9 @@ class Orchestrator:
         if self._cancel.is_set():
             raise Cancelled
 
-    def _target(self, step: Step, shot) -> tuple[int, int] | None:
-        """Real-screen point of the first action that has coordinates."""
+    @staticmethod
+    def _target_model(step: Step) -> tuple[float, float] | None:
+        """Screenshot-pixel point of the first action that has coordinates."""
         get = driver._get
         for a in step.actions:
             x, y = get(a, "x"), get(a, "y")
@@ -596,8 +598,34 @@ class Orchestrator:
             if x is None and path:
                 x, y = get(path[0], "x"), get(path[0], "y")
             if x is not None and y is not None:
-                return driver.to_screen(x, y, shot)
+                return x, y
         return None
+
+    def _target(self, step: Step, shot) -> tuple[int, int] | None:
+        """Real-screen point of the first action that has coordinates."""
+        pt = self._target_model(step)
+        return driver.to_screen(*pt, shot) if pt else None
+
+    SNAP_MAX = 120  # model px: a zoomed second look may move a guide arrow at most this far
+
+    def _snap_guide(self, step: Step, shot, token: int) -> None:
+        """Zoomed second look at the guide target (runs while the bubble text is written). If it finds the
+        button's exact centre nearby, the arrow moves there and clicks are judged against it."""
+        pt = self._target_model(step)
+        if not pt:
+            return
+        quoted = re.findall(r'["“]([^"”]{1,30})["”]', step.text or "")
+        what = quoted[0] if quoted else re.sub(r"(?i)^\s*(i'll|i will|let me)\s+", "", step.text or "")[:120]
+        better = talk.refine_point(shot, {"x": pt[0], "y": pt[1]}, what)
+        moved = math.dist(pt, (better["x"], better["y"]))
+        if moved < 2 or moved > self.SNAP_MAX or token != self._guide_token:
+            return
+        real = driver.to_screen(better["x"], better["y"], shot)
+        self._snapped[token] = real
+        if self._waiting:
+            self._guide_target = real
+        self._point(real, step)
+        actionlog.log("guide_snap", label=what, moved_px=round(moved * shot.scale))
 
     def _point(self, target: tuple[int, int], step: Step) -> None:
         """Chai flies to the target; the chip shows the button's name ("Pay Bill") when the model quoted it."""
@@ -613,11 +641,15 @@ class Orchestrator:
             return []
         self._check()  # "stop" may have come while the model was thinking
         target = self._target(step, shot)
+        self._guide_token = token = getattr(self, "_guide_token", 0) + 1
+        self._snapped = {}
         if target:
             self._point(target, step)
+            threading.Thread(target=self._snap_guide, args=(step, shot, token), daemon=True).start()
         text = self._think(lambda: narrator.narrate("guide", self.user_text, step.text, step.actions))
         self._check()
         self._say(text, "hold", ["do", "next"])  # stays until the user does the step
+        target = self._snapped.get(token, target)  # the exact spot, if the second look already found it
         actionlog.log("guide", note=step.text, bubble=text, target=target)
         self._guide_target = target
         self._off_target = False
