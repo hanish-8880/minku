@@ -423,24 +423,26 @@ SYSTEM_PLACE = (
 SYSTEM_ZOOM = (
     "This image is a zoomed-in part of a computer screen. Find the EXACT centre of: {what}. Reply with ONLY "
     'JSON {"found": bool, "x": int, "y": int}: x, y in THIS image\'s pixels; found false if it is not here.'
-)
+)  # (asking for a box instead was tested Nov 2: much worse, ~59 px off vs ~20 px)
+ZOOM_PIN = (110, 70)  # model px: a very close last look (about 6x) so the arrow lands on the exact pixel
+ZOOM_REASONING = {"effort": "minimal"}  # finding one thing in a small picture needs little thinking
 ZOOM_NEAR = (300, 190)  # model px around the guess: a sharp close look (~450x285 real px at 1080p)
 ZOOM_WIDE = (640, 380)  # when the thing is not in the close look: a wider look first, then close again
 
 
 def refine_point(shot: Shot, pt: dict, what: str) -> dict:
     """Second look for precise pointing (first guesses are often 100-300 px off): a sharp, enlarged piece of
-    the screen around the guess; if the thing is not in it, a wider piece, then a close look at what that
-    found. Returns the better point (screenshot px), or the first guess."""
+    the screen around the guess (a wider piece first if it is not there), then a very close look (~6x) at
+    what that found, so the arrow lands on the exact spot. Returns the better point (screenshot px)."""
     if shot.full is None or not pt or not what.strip():
         return pt
-    near = _zoom(shot, pt, what, *ZOOM_NEAR)
-    if near:
-        return near
-    wide = _zoom(shot, pt, what, *ZOOM_WIDE)
-    if not wide:
-        return pt
-    return _zoom(shot, wide, what, *ZOOM_NEAR) or wide
+    found = _zoom(shot, pt, what, *ZOOM_NEAR)
+    if not found:
+        wide = _zoom(shot, pt, what, *ZOOM_WIDE)
+        if not wide:
+            return pt
+        found = _zoom(shot, wide, what, *ZOOM_NEAR) or wide
+    return _zoom(shot, found, what, *ZOOM_PIN) or found  # last, very close look: the exact pixel
 
 
 def _zoom(shot: Shot, pt: dict, what: str, zw: int, zh: int) -> dict | None:
@@ -449,14 +451,14 @@ def _zoom(shot: Shot, pt: dict, what: str, zw: int, zh: int) -> dict | None:
     x0 = min(max(pt["x"] - zw / 2, 0), max(0, shot.width - zw))
     y0 = min(max(pt["y"] - zh / 2, 0), max(0, shot.height - zh))
     img = Image.open(io.BytesIO(crop_png(shot, x0, y0, zw, zh))).convert("RGB")
-    k = min(2.0, 1280 / img.width)  # enlarge so small icons and text are clear, at most 1280 px wide
+    k = min(6.0, 960 / img.width)  # enlarge so small icons and text are clear (the pin look ~6x)
     if k > 1.05:
         img = img.resize((round(img.width * k), round(img.height * k)), Image.LANCZOS)
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=88)
     try:
         resp = config.client().responses.create(
-            model=config.MODEL_SPARK, reasoning=config.REASONING,
+            model=config.MODEL_SPARK, reasoning=ZOOM_REASONING,
             instructions=SYSTEM_ZOOM.replace("{what}", what[:200]),
             input=[{"role": "user", "content": [
                 {"type": "input_text", "text": f"Where exactly is: {what[:200]}"},
@@ -467,12 +469,26 @@ def _zoom(shot: Shot, pt: dict, what: str, zw: int, zh: int) -> dict | None:
     except Exception as e:  # noqa: BLE001 - the first guess is still shown
         print(f"[talk] zoom refine failed: {e}")
         return None
-    if not data.get("found") or not all(isinstance(data.get(v), (int, float)) for v in "xy"):
-        return None
-    if not (0 <= data["x"] < img.width and 0 <= data["y"] < img.height):
+    centre = box_centre(data, img.width, img.height)
+    if not centre:
         return None
     per_px = img.width / zw  # image px per model px
-    return {"x": round(x0 + data["x"] / per_px), "y": round(y0 + data["y"] / per_px)}
+    return {"x": round(x0 + centre[0] / per_px), "y": round(y0 + centre[1] / per_px)}
+
+
+def box_centre(data: dict, w: int, h: int) -> tuple[float, float] | None:
+    """Centre of the model's tight box (more precise than a guessed point), or its x/y; None if not found."""
+    if not data.get("found"):
+        return None
+    b = data.get("box")
+    if isinstance(b, (list, tuple)) and len(b) == 4 and all(isinstance(v, (int, float)) for v in b):
+        x1, y1, x2, y2 = b
+        cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+    elif all(isinstance(data.get(v), (int, float)) for v in "xy"):
+        cx, cy = data["x"], data["y"]
+    else:
+        return None
+    return (cx, cy) if 0 <= cx < w and 0 <= cy < h else None
 
 
 def region_image(shot: Shot, data: dict) -> Image.Image:

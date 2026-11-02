@@ -97,12 +97,19 @@ def test_zoom_refine_maps_back(monkeypatch):
     from zavero import talk
 
     shot = Shot("", 1280, 720, 1.5, full=Image.new("RGB", (1920, 1080)))
-    reply = type("R", (), {"output_text": '{"found": true, "x": 400, "y": 100}'})()
-    fake = type("C", (), {"responses": type("X", (), {"create": lambda self, **k: reply})()})()
+    replies = []
+    fake = type("C", (), {"responses": type("X", (), {"create": lambda self, **k: type(
+        "R", (), {"output_text": replies.pop(0)})()})()})()
     monkeypatch.setattr(talk.config, "client", lambda: fake)
-    # close look: 300x190 model px around (640, 360) = x0 490, y0 265; 450 real px -> x2 = 900 px (3 per model px)
-    assert talk.refine_point(shot, {"x": 640, "y": 360}, "Settings") == {"x": 490 + 133, "y": 265 + 33}
-    reply.output_text = '{"found": false}'
+    # close look: 300x190 model px around (640, 360) -> x0 490, y0 265; 450 real px enlarged to 960 (3.2 per model px)
+    #   x 400 / 3.2 = 125 -> 615, y 100 / 3.2 = 31 -> 296
+    # pin look: 110x70 model px around (615, 296) -> x0 560, y0 261; 165 real px enlarged to 960 (8.73 per model px)
+    #   x 524 / 8.73 = 60 -> 620, y 305 / 8.73 = 35 -> 296
+    replies[:] = ['{"found": true, "x": 400, "y": 100}', '{"found": true, "x": 524, "y": 305}']
+    assert talk.refine_point(shot, {"x": 640, "y": 360}, "Settings") == {"x": 620, "y": 296}
+    replies[:] = ['{"found": true, "x": 400, "y": 100}', '{"found": false}']  # pin look unsure: keep the close look
+    assert talk.refine_point(shot, {"x": 640, "y": 360}, "Settings") == {"x": 615, "y": 296}
+    replies[:] = ['{"found": false}', '{"found": false}']  # not in the close or the wide look: first guess
     assert talk.refine_point(shot, {"x": 640, "y": 360}, "Settings") == {"x": 640, "y": 360}
 
 
