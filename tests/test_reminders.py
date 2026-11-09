@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from zavero.reminders import Reminders, is_reminder, next_time
+from minku.reminders import Reminders, is_reminder, next_time
 
 
 def test_triggers():

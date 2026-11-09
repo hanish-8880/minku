@@ -4,7 +4,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PyQt6.QtCore import QPointF, QRectF  # noqa: E402
 
-from zavero.overlay import HOVER_ALPHA, reading_time, safe_area  # noqa: E402
+from minku.overlay import HOVER_ALPHA, reading_time, safe_area  # noqa: E402
 
 from test_follow import _overlay  # noqa: E402
 
@@ -81,7 +81,7 @@ def test_bubble_waits_while_a_diagram_is_explained():
 
 
 def test_marks_on_the_page_step_through_each_part():
-    from zavero.overlay import MARK_S
+    from minku.overlay import MARK_S
 
     ov = _overlay()
     steps = [{"shape": "circle", "color": "red", "pts": [(0.2, 0.5)], "fr": 0.08, "label": "Battery", "detail": "Pushes current",

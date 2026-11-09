@@ -1,5 +1,5 @@
-from zavero import driver, orchestrator, talk
-from zavero.orchestrator import Orchestrator
+from minku import driver, orchestrator, talk
+from minku.orchestrator import Orchestrator
 
 
 class Sig:

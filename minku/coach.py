@@ -23,9 +23,9 @@ import time
 import uuid
 from datetime import datetime, timedelta
 
-from zavero import actionlog, config, driver, research, safety, skills, talk
-from zavero.phrases import LANG_NAMES, lang
-from zavero.reminders import extract_json
+from minku import actionlog, config, driver, research, safety, skills, talk
+from minku.phrases import LANG_NAMES, lang
+from minku.reminders import extract_json
 
 GOAL_WORDS = [
     r"\bteach me\b", r"\bi want to (learn|make|create|build|start|design|set ?up|edit|record|open a)\b",
@@ -310,7 +310,7 @@ class Coach:
                 actionlog.log("coach_stopped")
             except Exception as e:  # noqa: BLE001 - tell the user, keep the saved progress
                 actionlog.log("coach_error", error=str(e))
-                from zavero.phrases import friendly_error
+                from minku.phrases import friendly_error
                 self._say(friendly_error(e, self.o.user_text), "error")
             finally:
                 self.active = False
@@ -390,7 +390,7 @@ class Coach:
             if kind == "button" and val in ("yes", "no", "close"):
                 return val == "yes"
             if kind == "say":
-                from zavero.orchestrator import classify  # same yes / no words as everywhere else
+                from minku.orchestrator import classify  # same yes / no words as everywhere else
                 c = classify(val)
                 return True if c in ("yes", "do") else False if c in ("no", "stop") else val
 
@@ -553,7 +553,7 @@ class Coach:
         how = self.wait_for(st, shot)
         self.ui.hide_board.emit()
         if how == "do" and st["secret"]:
-            how = self.wait_for({**st, "action": "look"}, shot)  # secrets: the user types them, never Zavero
+            how = self.wait_for({**st, "action": "look"}, shot)  # secrets: the user types them, never Minku
         return how
 
     def wait_for(self, st: dict, shot) -> str:
@@ -612,7 +612,7 @@ class Coach:
                     if val == "close":
                         self._check()
                 if kind == "say":
-                    from zavero.orchestrator import classify
+                    from minku.orchestrator import classify
                     c = classify(val)
                     if c == "do":
                         return "do"
@@ -626,7 +626,7 @@ class Coach:
                 lis.stop()
 
     def do_step(self, st: dict, shot) -> None:
-        """"Do it for me": Zavero performs this one step. Never types secrets."""
+        """"Do it for me": Minku performs this one step. Never types secrets."""
         acts = to_actions(st)
         if st["secret"] or safety.secret_reason(st["say"], acts):
             return

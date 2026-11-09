@@ -9,9 +9,9 @@ import time
 
 from pynput import keyboard, mouse
 
-from zavero import actionlog, briefing, coach, config, driver, narrator, onboarding, reminders, safety, talk, writer
-from zavero.phrases import friendly_error, lang, phrase, point_label
-from zavero.brain import Brain, Step
+from minku import actionlog, briefing, coach, config, driver, narrator, onboarding, reminders, safety, talk, writer
+from minku.phrases import friendly_error, lang, phrase, point_label
+from minku.brain import Brain, Step
 
 # Short spoken commands. Matched as whole words/phrases after lowercasing.
 WORDS = {
@@ -183,7 +183,7 @@ class Orchestrator:
             threading.Thread(target=self._talk, args=(text,), daemon=True).start()
             return
         if self.busy:
-            if intent == "do":  # "do it" / "you do for me ..." mid-task: same task, Zavero takes over
+            if intent == "do":  # "do it" / "you do for me ..." mid-task: same task, Minku takes over
                 self._take_over(text)
                 return
             if intent == "next":
@@ -204,7 +204,7 @@ class Orchestrator:
     _feedback_next = False
 
     @property
-    def _zavero_acting(self) -> bool:
+    def _minku_acting(self) -> bool:
         """Do mode is clicking/typing itself: those events must not dismiss its own bubbles."""
         return self.busy and self.mode == "do"
     _onboard_q: queue.Queue | None = None
@@ -231,14 +231,14 @@ class Orchestrator:
         self._say(phrase("feedback_ask", self.user_text), "hold")
 
     def _answers_do_question(self) -> bool:
-        """True if Zavero just finished a do-mode task by asking something: the reply keeps do mode."""
+        """True if Minku just finished a do-mode task by asking something: the reply keeps do mode."""
         return (self.mode == "do" and getattr(self, "_asked_at", None) is not None
                 and time.monotonic() - self._asked_at < 300)
 
     def _on_click(self, x, y, button, pressed) -> None:
         if not pressed or self.ui.is_on_avatar(x, y) or self.ui.is_on_bubble_button(x, y):
             return  # dragging Chai or pressing a bubble button is not a guide step
-        if not self._zavero_acting:
+        if not self._minku_acting:
             self.ui.dismiss.emit()  # overlay keeps "hold" bubbles (guide steps, questions)
         if self._waiting:
             t = self._guide_target
@@ -246,14 +246,14 @@ class Orchestrator:
             self._acted.set()
 
     def _on_scroll(self, x, y, dx, dy) -> None:
-        if self.ui.steps_open and not self._zavero_acting:
+        if self.ui.steps_open and not self._minku_acting:
             self.ui.hide_board.emit()  # marks drawn on the page would no longer line up with it
 
     def _on_key(self, key) -> None:
         if key == keyboard.Key.esc:
             self.ui.hide_board.emit()
             self.ui.hide_text.emit()
-        elif key != getattr(keyboard.Key, config.PTT_KEY) and not self._zavero_acting:
+        elif key != getattr(keyboard.Key, config.PTT_KEY) and not self._minku_acting:
             self.ui.dismiss.emit()  # the user started typing: an old bubble gets out of the way
         if key == keyboard.Key.esc and self.busy:
             self.stop()
@@ -277,7 +277,7 @@ class Orchestrator:
             self._say(phrase("stopped", self.user_text), "done")
 
     def start(self, text: str, mode: str, said: str | None = None) -> None:
-        """Run a task. said = the user's own words when text is a task Zavero wrote (keeps their language)."""
+        """Run a task. said = the user's own words when text is a task Minku wrote (keeps their language)."""
         self.user_text = said or text
         self.mode = mode
         self._prefetched = None  # guide/do mode always looks at the screen fresh
@@ -302,7 +302,7 @@ class Orchestrator:
         recent = [h for h in getattr(self, "_history", []) if now - h[0] < self.MEMORY_S]
         if not recent:
             return text
-        lines = [f"{'User' if who == 'user' else 'You (Zavero)'}: {t}" for _, who, t in recent]
+        lines = [f"{'User' if who == 'user' else 'You (Minku)'}: {t}" for _, who, t in recent]
         return ("Earlier in this conversation (oldest first):\n" + "\n".join(lines)
                 + f"\n\nThe user now says: {text}")
 
@@ -342,7 +342,7 @@ class Orchestrator:
             self.ui.show_marks.emit(x, y, round(r["w"] * shot.scale), round(r["h"] * shot.scale), res["steps"], reply)
             reply += "\n" + "\n".join(f"**{i}. {s['label']}** – {s['detail']}" for i, s in enumerate(res["steps"], 1))
             self._remember("user", text)
-            self._remember("zavero", reply)
+            self._remember("minku", reply)
             actionlog.log("talk_marks", question=text, region=r, steps=len(res["steps"]))
             return  # the overlay captions each part in the bubble as it marks it
         elif res["region"]:
@@ -354,7 +354,7 @@ class Orchestrator:
             self.ui.point_at.emit(*driver.to_screen(res["point"]["x"], res["point"]["y"], shot))
             self.ui.set_label.emit(point_label(res.get("label", ""), text))
         self._remember("user", text)
-        self._remember("zavero", reply)
+        self._remember("minku", reply)
         actionlog.log("talk", question=text, answer=reply, point=res["point"], region=res["region"])
         self._say(reply, "info", ["copy"])
         if res.get("goto"):
@@ -402,7 +402,7 @@ class Orchestrator:
             return
         reply = (f"**{res['label']}**\n" if res["label"] else "") + res["answer"]
         self._remember("user", f"(circled a part) {text}")
-        self._remember("zavero", reply)
+        self._remember("minku", reply)
         actionlog.log("circle_talk", question=text, label=res["label"], answer=res["answer"])
         self._say(reply, "info", ["copy"])
 
@@ -421,7 +421,7 @@ class Orchestrator:
             return
         self.ui.show_3d.emit(json.dumps(scene, ensure_ascii=False))
         self._remember("user", text)
-        self._remember("zavero", scene["answer"] + " " + "; ".join(s["label"] for s in scene["steps"]))
+        self._remember("minku", scene["answer"] + " " + "; ".join(s["label"] for s in scene["steps"]))
         actionlog.log("talk3d", question=text, title=scene["title"], parts=len(scene["parts"]))
 
     def _open_line(self, goto: dict, error: str, user_lang: str, seq: int) -> None:
@@ -445,7 +445,7 @@ class Orchestrator:
         if res.get("point"):
             self.ui.point_at.emit(*driver.to_screen(res["point"]["x"], res["point"]["y"], shot))
             self.ui.set_label.emit(f"line {line}")
-        self._remember("zavero", res.get("answer", ""))
+        self._remember("minku", res.get("answer", ""))
         self._say(f"**{file} · line {line}**\n{res.get('answer', '')}", "info")
 
     # --- "post this on LinkedIn" --------------------------------------------
@@ -540,18 +540,18 @@ class Orchestrator:
                 result = self._think(lambda: brain.next(step, shot, acked))
                 self._set_step(brain.steps)
             ui.go_home.emit()
-            self._remember("zavero", result)
+            self._remember("minku", result)
             self._asked_at = time.monotonic() if "?" in result else None  # ended with a question for the user
             self._say(self._think(lambda: narrator.narrate("final", said, result)), "done")
             actionlog.log("finished", text=result)
         except Cancelled:
             ui.go_home.emit()
-            self._remember("zavero", "(the user stopped this task)")
+            self._remember("minku", "(the user stopped this task)")
             self._say(phrase("stopped", said), "done")
             actionlog.log("stopped")
         except GuideEnded as e:
             ui.go_home.emit()
-            self._remember("zavero", f"(guide paused: {e})")
+            self._remember("minku", f"(guide paused: {e})")
             note = ("The user stopped following the steps, so you paused the guide. "
                     "Tell them kindly to hold Right Ctrl whenever they need help again.")
             self._say(narrator.narrate("final", said, note), "done")
@@ -740,7 +740,7 @@ class Orchestrator:
             self._acted.set()
 
     def _take_over(self, said: str) -> None:
-        """Same task, but now Zavero does the steps (do mode)."""
+        """Same task, but now Minku does the steps (do mode)."""
         self._remember("user", said)
         self.mode = "do"
         self.ui.set_mode.emit("Doing")

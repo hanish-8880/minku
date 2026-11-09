@@ -1,4 +1,4 @@
-"""SAM 3.1 precision: snap Zavero's pen strokes onto the real shapes in a diagram.
+"""SAM 3.1 precision: snap Minku's pen strokes onto the real shapes in a diagram.
 
 Muse Spark plans each stroke ("trace the blue tube, roughly here"). SAM 3.1 returns the exact
 outline of every "blue tube" in the image; we pick the one nearest to Spark's rough points and
@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from meta_sam_parser import SegmentationMask, decode_mask_to_raster
 from PIL import Image
 
-from zavero import config
+from minku import config
 
 _RECORD = re.compile(r"<\|box;([^|]*)\|><\|mask;([^|]*)\|>")
 

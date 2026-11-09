@@ -1,7 +1,7 @@
 import queue
 
-from zavero import briefing, driver, onboarding
-from zavero.phrases import greeting
+from minku import briefing, driver, onboarding
+from minku.phrases import greeting
 
 from test_interrupt import FakeUI
 

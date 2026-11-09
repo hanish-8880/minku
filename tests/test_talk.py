@@ -1,5 +1,5 @@
-from zavero.driver import Shot
-from zavero.talk import _goto, clean_drawing, is_diagram, is_error, is_question
+from minku.driver import Shot
+from minku.talk import _goto, clean_drawing, is_diagram, is_error, is_question
 
 
 def test_error_questions():
@@ -94,7 +94,7 @@ def test_sketch_shapes_are_filled_2d():
 def test_zoom_refine_maps_back(monkeypatch):
     from PIL import Image
 
-    from zavero import talk
+    from minku import talk
 
     shot = Shot("", 1280, 720, 1.5, full=Image.new("RGB", (1920, 1080)))
     replies = []
@@ -114,7 +114,7 @@ def test_zoom_refine_maps_back(monkeypatch):
 
 
 def test_3d_requests():
-    from zavero.talk import is_3d
+    from minku.talk import is_3d
 
     for t in ["heart ni 3D lo explain chey", "show me the earth in 3d", "explain the inside of an engine",
               "దీన్ని త్రీడీ లో చూపించు", "इसे 3डी में समझाओ"]:
@@ -124,7 +124,7 @@ def test_3d_requests():
 
 
 def test_clean_scene():
-    from zavero.talk import clean_scene
+    from minku.talk import clean_scene
 
     out = clean_scene({"title": "Heart", "answer": "The heart pumps blood.", "parts": [
         {"shape": "sphere", "pos": [0, 0, 0], "size": [1.2], "color": "red", "label": "Left ventricle", "step": 3},
@@ -145,7 +145,7 @@ def test_clean_scene():
 def test_circled_region():
     import math
 
-    from zavero.talk import circled_region
+    from minku.talk import circled_region
 
     loop = [(500 + 80 * math.cos(a / 20 * math.tau), 300 + 50 * math.sin(a / 20 * math.tau)) for a in range(21)]
     assert circled_region(loop) == (420, 250, 160, 100)
@@ -165,8 +165,8 @@ def test_mark_loop_draws_on_the_screenshot():
 
     from PIL import Image
 
-    from zavero.driver import encode
-    from zavero.talk import mark_loop
+    from minku.driver import encode
+    from minku.talk import mark_loop
 
     shot = Shot(encode(Image.new("RGB", (200, 100), "white")), 200, 100, 1.0)
     url = mark_loop(shot, [(20, 20), (180, 20), (180, 80), (20, 80)])

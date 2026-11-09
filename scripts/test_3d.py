@@ -16,7 +16,7 @@ from PyQt6.QtGui import QColor, QKeySequence, QShortcut
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QApplication
 
-WEB = Path(__file__).resolve().parent.parent / "zavero" / "web"
+WEB = Path(__file__).resolve().parent.parent / "minku" / "web"
 
 PAGE = """<!doctype html><html><head><meta charset="utf-8">
 <style>

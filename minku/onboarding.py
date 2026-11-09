@@ -6,14 +6,14 @@ Runs once (data/state.json -> onboarded: true). Tray -> "Replay onboarding" runs
 import queue
 import time
 
-from zavero import actionlog, briefing, config, driver
-from zavero.phrases import LANG_NAMES, lang
-from zavero.reminders import extract_json
+from minku import actionlog, briefing, config, driver
+from minku.phrases import LANG_NAMES, lang
+from minku.reminders import extract_json
 
 HELLO = [
-    ("en", "Hey! I'm **Chai**, your **Zavero** buddy 👋"),
-    ("te", "నమస్తే! నేను **Chai**, మీ **Zavero** స్నేహితుడిని 👋"),
-    ("hi", "नमस्ते! मैं **Chai** हूँ, आपका **Zavero** दोस्त 👋"),
+    ("en", "Hey! I'm **Chai**, your **Minku** buddy 👋"),
+    ("te", "నమస్తే! నేను **Chai**, మీ **Minku** స్నేహితుడిని 👋"),
+    ("hi", "नमस्ते! मैं **Chai** हूँ, आपका **Minku** दोस्त 👋"),
 ]
 SAY_HI = "Hold **Right Ctrl** and say hi in your language 🎤\nపట్టుకుని హాయ్ చెప్పండి · दबाकर हाय बोलिए"
 TEXT = {

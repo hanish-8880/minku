@@ -1,4 +1,4 @@
-"""Transparent, always-on-top overlay: Zavero's avatar (Chai), glass speech bubble and target ring.
+"""Transparent, always-on-top overlay: Minku's avatar (Chai), glass speech bubble and target ring.
 
 Other threads drive it only through the signals (thread-safe). Coordinates passed in are
 real screen pixels (what driver.to_screen returns); the overlay converts them to Qt pixels.
@@ -9,7 +9,7 @@ Clicks pass straight through the full-screen overlay. Chai itself lives in a sma
 window on top, so it can be dragged anywhere (that spot becomes its new home) or clicked to twirl.
 
 Preview without the rest of the app:
-    python -m zavero.overlay
+    python -m minku.overlay
 """
 import ctypes
 import html
@@ -27,10 +27,10 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import QApplication, QWidget
 
-from zavero.phrases import lang
+from minku.phrases import lang
 
 try:  # the 3D board needs PyQt6-WebEngine (imported before QApplication exists)
-    from zavero import board3d
+    from minku import board3d
 except ImportError:  # pragma: no cover - 3D board just isn't offered
     board3d = None
 
@@ -144,7 +144,7 @@ def ui_font(pt: float, bold: bool = False) -> QFont:
 
 # --- Chai, the wool-felt buddy ------------------------------------------------
 def _chai_point(a: float) -> tuple[float, float]:
-    """Chai's cloud outline in design units (about 208 wide), same shape as design/zavero-buddies.html."""
+    """Chai's cloud outline in design units (about 208 wide), same shape as design/minku-buddies.html."""
     k = 1 - 0.85 * max(0.0, math.sin(a))  # bumps fade out towards the flat bottom
     r = 104 * (1 + 0.075 * math.cos(7 * a + math.pi / 2) * k)
     return r * math.cos(a), r * math.sin(a) * 0.86 + 8
@@ -519,7 +519,7 @@ class Overlay(QWidget):
         self._label, self._label_born, self._label_at = "", 0.0, [0.0]  # chip text, start, per-char times
         self.follow_mode = "auto"   # set from main.py (saved in data/state.json); see FOLLOW_MODES
         self._following = False
-        self.show_mode = "always"   # or "talk": only while the user talks / Zavero helps (tray, state.json)
+        self.show_mode = "always"   # or "talk": only while the user talks / Minku helps (tray, state.json)
         self._opacity = 1.0
         self._through = False
         self._vel = QPointF()
@@ -926,7 +926,7 @@ class Overlay(QWidget):
         return [(round((x + g.x()) * self._dpr), round((y + g.y()) * self._dpr)) for x, y in ink]
 
     def keep_lasso(self, real_pts: list[tuple[int, int]]) -> None:
-        """Keep the user's loop highlighted while Zavero explains it (thread-safe: set + repaint later)."""
+        """Keep the user's loop highlighted while Minku explains it (thread-safe: set + repaint later)."""
         self._lasso = ([self.local(x, y) for x, y in real_pts], self._t)
         self._ink_dirty = True
 
@@ -998,7 +998,7 @@ class Overlay(QWidget):
         self._following = following
 
     def _step_visibility(self) -> None:
-        """Tray "Only while I talk": appear on the hotkey, fade out (0.4 s) once Zavero is done helping."""
+        """Tray "Only while I talk": appear on the hotkey, fade out (0.4 s) once Minku is done helping."""
         want = (self.show_mode == "always" or self._listening or self._thinking or self._target is not None
                 or bool(self._board) or self._drag is not None or self._flight is not None
                 or (bool(self._text) and self._t - self._active_at < self.ACTIVE_S))
@@ -1453,7 +1453,7 @@ class Overlay(QWidget):
         p.setPen(QPen(QColor(255, 255, 255, 210), 1))
         p.drawRoundedRect(rect.adjusted(0.5, 0.5, -0.5, -0.5), radius - 0.5, radius - 0.5)
 
-        # header: mood dot + "ZAVERO · GUIDE"
+        # header: mood dot + "MINKU · GUIDE"
         p.setPen(Qt.PenStyle.NoPen)
         p.setBrush(mood)
         p.drawEllipse(QPointF(rect.x() + pad + 3.5, rect.y() + 15.5), 3.5, 3.5)
@@ -1462,7 +1462,7 @@ class Overlay(QWidget):
         p.setFont(head)
         p.setPen(QColor(71, 85, 105))
         p.drawText(QRectF(rect.x() + pad + 12, rect.y() + 8, w - 2 * pad - 36, 16),
-                   Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"ZAVERO · {self._mode.upper()}")
+                   Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"MINKU · {self._mode.upper()}")
         self._btn_rects = []
         if "close" in self._buttons:  # ✕ in the header corner
             box = QRectF(rect.right() - pad - 16, rect.y() + 7, 18, 18)
@@ -1543,7 +1543,7 @@ class Overlay(QWidget):
         head_font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 0.8)
         p.setFont(head_font)
         p.drawText(QRectF(x + pad + 4, 48 + 6, W - 2 * pad, 18), Qt.AlignmentFlag.AlignLeft,
-                   "ZAVERO · WHITEBOARD" if side < 0 else "ZAVERO · DIAGRAM")
+                   "MINKU · WHITEBOARD" if side < 0 else "MINKU · DIAGRAM")
         p.setFont(ui_font(7.5))
         p.drawText(QRectF(x + pad, 48 + 6, W - 2 * pad - 4, 18), Qt.AlignmentFlag.AlignRight, "Esc to close")
 
@@ -1769,7 +1769,7 @@ if __name__ == "__main__":
     ov = Overlay()
     ov.show()
     cx, cy = int(ov.width() * ov._dpr / 2), int(ov.height() * ov._dpr / 2)
-    ov.show_text.emit("నమస్తే! నేను **Zavero**. మీకు ఏ బటన్ నొక్కాలో చూపిస్తాను.", "info")
+    ov.show_text.emit("నమస్తే! నేను **Minku**. మీకు ఏ బటన్ నొక్కాలో చూపిస్తాను.", "info")
     QTimer.singleShot(1200, lambda: (ov.point_at.emit(cx, cy), ov.set_label.emit("Pay Bill")))
     QTimer.singleShot(1300, lambda: ov.show_text.emit("ఇక్కడ **Pay Bill** బటన్ మీద క్లిక్ చేయండి.", "info"))
     QTimer.singleShot(3500, lambda: ov.tap_at.emit(cx, cy))

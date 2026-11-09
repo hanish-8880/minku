@@ -1,5 +1,5 @@
-from zavero import writer
-from zavero.safety import risky_reason
+from minku import writer
+from minku.safety import risky_reason
 
 
 def test_post_requests():

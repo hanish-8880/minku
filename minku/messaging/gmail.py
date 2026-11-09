@@ -10,9 +10,9 @@ import time
 from email.mime.text import MIMEText
 from email.utils import parseaddr
 
-from zavero import actionlog, config
-from zavero.phrases import lang
-from zavero.reminders import extract_json
+from minku import actionlog, config
+from minku.phrases import lang
+from minku.reminders import extract_json
 
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",  # read new mail

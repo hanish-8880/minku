@@ -1,6 +1,6 @@
 import math
 
-from zavero.highlight import _length, centerline
+from minku.highlight import _length, centerline
 
 
 def test_centerline_follows_a_bent_tube():

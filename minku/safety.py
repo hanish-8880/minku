@@ -1,4 +1,4 @@
-"""Risky-action rules. Zavero asks before risky steps and never types secrets."""
+"""Risky-action rules. Minku asks before risky steps and never types secrets."""
 import re
 
 # brain.py tells the model to start its note with this when the click is a final, consequential one.
@@ -64,7 +64,7 @@ def risky_reason(model_text: str, actions) -> str | None:
 
 
 def secret_reason(model_text: str, actions) -> str | None:
-    """Return why Zavero must not type this itself (password, OTP, card, Aadhaar...)."""
+    """Return why Minku must not type this itself (password, OTP, card, Aadhaar...)."""
     typed = _typed(actions)
     if not typed:
         return None

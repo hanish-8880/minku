@@ -9,12 +9,12 @@ from datetime import date
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 
-from zavero import config, skills
-from zavero.reminders import extract_json
+from minku import config, skills
+from minku.reminders import extract_json
 
 MAX_BYTES = 1_500_000
 MAX_TEXT = 6000  # characters kept per page
-UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Zavero/0.9 (read-only help reader)"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Minku/0.9 (read-only help reader)"
 
 SOURCES_SYSTEM = (
     "The user wants help with: {goal}. Open window title: {title}. List 2-4 OFFICIAL help / documentation "

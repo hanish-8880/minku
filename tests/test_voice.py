@@ -1,6 +1,6 @@
 import numpy as np
 
-from zavero.voice import mic_level
+from minku.voice import mic_level
 
 
 def test_mic_level():

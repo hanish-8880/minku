@@ -4,9 +4,9 @@ import re
 
 PHRASES = {
     "welcome": {
-        "en": "Hi! I'm **Zavero** 👋\nHold **Right Ctrl** and tell me what you want to do.",
-        "te": "నమస్తే! నేను **Zavero** 👋\n**Right Ctrl** పట్టుకుని మీకు ఏం కావాలో చెప్పండి.",
-        "hi": "नमस्ते! मैं **Zavero** हूँ 👋\n**Right Ctrl** दबाकर रखिए और बताइए क्या करना है।",
+        "en": "Hi! I'm **Minku** 👋\nHold **Right Ctrl** and tell me what you want to do.",
+        "te": "నమస్తే! నేను **Minku** 👋\n**Right Ctrl** పట్టుకుని మీకు ఏం కావాలో చెప్పండి.",
+        "hi": "नमस्ते! मैं **Minku** हूँ 👋\n**Right Ctrl** दबाकर रखिए और बताइए क्या करना है।",
     },
     "looking": {
         "en": "Let me look at your screen…",

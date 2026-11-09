@@ -1,7 +1,7 @@
 """Push-to-talk: hold the hotkey, speak, release -> transcript via Muse Voice Transcribe.
 
 Test it alone:
-    python -m zavero.voice
+    python -m minku.voice
 """
 import asyncio
 import json
@@ -14,7 +14,7 @@ import numpy as np
 import sounddevice as sd
 from pynput import keyboard
 
-from zavero import config
+from minku import config
 
 BLOCK = config.SAMPLE_RATE // 10  # 100 ms of audio per frame
 _END = None  # sentinel: user released the hotkey

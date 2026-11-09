@@ -5,7 +5,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PyQt6.QtCore import QPointF  # noqa: E402
 
-from zavero.orchestrator import Orchestrator  # noqa: E402
+from minku.orchestrator import Orchestrator  # noqa: E402
 
 from test_follow import _overlay  # noqa: E402
 
@@ -73,8 +73,8 @@ def test_yes_button_answers_the_question():
 
 
 def test_guide_arrow_snaps_to_the_exact_button(monkeypatch):
-    from zavero import driver, talk
-    from zavero.brain import Step
+    from minku import driver, talk
+    from minku.brain import Step
 
     from test_interrupt import FakeUI
 

@@ -1,20 +1,20 @@
-"""Zavero entry point: overlay + push-to-talk + orchestrator.
+"""Minku entry point: overlay + push-to-talk + orchestrator.
 
     python main.py                                   # hold Right Ctrl and speak
     python main.py --task "open notepad"             # skip voice, guide mode
     python main.py --task "open notepad and type hello" --do
 
-start_zavero.bat runs this with pythonw (no console window). Output then goes to logs/zavero.log.
+start_minku.bat runs this with pythonw (no console window). Output then goes to logs/minku.log.
 """
 import argparse
 import signal
 import sys
 
-from zavero import config
+from minku import config
 
 if sys.stdout is None:  # started with pythonw: no console, so keep prints and errors in a file
     config.LOG_DIR.mkdir(exist_ok=True)
-    sys.stdout = sys.stderr = open(config.LOG_DIR / "zavero.log", "a", encoding="utf-8", buffering=1)
+    sys.stdout = sys.stderr = open(config.LOG_DIR / "minku.log", "a", encoding="utf-8", buffering=1)
 
 from PyQt6.QtCore import QLockFile, QTimer  # noqa: E402
 from PyQt6.QtGui import QAction, QActionGroup  # noqa: E402
@@ -22,28 +22,28 @@ from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon  # noqa: E402
 
 import threading  # noqa: E402
 
-from zavero import actionlog, briefing, phrases, reminders  # noqa: E402
-from zavero.messaging.gmail import GmailWatcher  # noqa: E402
-from zavero.orchestrator import Orchestrator  # noqa: E402
-from zavero.overlay import Overlay, avatar_icon  # noqa: E402
-from zavero.phrases import phrase  # noqa: E402
-from zavero.voice import PushToTalk  # noqa: E402
+from minku import actionlog, briefing, phrases, reminders  # noqa: E402
+from minku.messaging.gmail import GmailWatcher  # noqa: E402
+from minku.orchestrator import Orchestrator  # noqa: E402
+from minku.overlay import Overlay, avatar_icon  # noqa: E402
+from minku.phrases import phrase  # noqa: E402
+from minku.voice import PushToTalk  # noqa: E402
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--task", help="run this task without speaking")
-    p.add_argument("--do", action="store_true", help="do mode: Zavero clicks for you")
+    p.add_argument("--do", action="store_true", help="do mode: Minku clicks for you")
     args = p.parse_args()
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    # Only one Zavero at a time (double-clicking the launcher twice is easy to do).
+    # Only one Minku at a time (double-clicking the launcher twice is easy to do).
     config.LOG_DIR.mkdir(exist_ok=True)
-    lock = QLockFile(str(config.LOG_DIR / "zavero.lock"))
+    lock = QLockFile(str(config.LOG_DIR / "minku.lock"))
     if not lock.tryLock(100):
-        print("Zavero is already running.")
+        print("Minku is already running.")
         return
 
     overlay = Overlay()
@@ -53,7 +53,7 @@ def main() -> None:
     overlay.button_clicked.connect(orch.on_button)
 
     tray = QSystemTrayIcon(avatar_icon(), app)
-    tray.setToolTip("Zavero - hold Right Ctrl and speak")
+    tray.setToolTip("Minku - hold Right Ctrl and speak")
     menu = QMenu()
     state = briefing.load_state()
 
@@ -62,7 +62,7 @@ def main() -> None:
 
     # Settings: (saved key, menu title, default, choices, apply). Saved in data/state.json.
     settings = [
-        ("show_mode", "Show Zavero", "always", [("always", "Always"), ("talk", "Only while I talk")],
+        ("show_mode", "Show Minku", "always", [("always", "Always"), ("talk", "Only while I talk")],
          lambda v: setattr(overlay, "show_mode", v)),
         ("chai_follow", "Chai position", "auto", [("auto", "Follow my mouse while helping"),
                                                   ("always", "Always follow my mouse"),
@@ -92,7 +92,7 @@ def main() -> None:
     menu.addAction(replay_action)
     stop_action = QAction("Stop current task", menu)
     stop_action.triggered.connect(orch.stop)
-    quit_action = QAction("Quit Zavero", menu)
+    quit_action = QAction("Quit Minku", menu)
     quit_action.triggered.connect(app.quit)
     menu.addAction(stop_action)
     menu.addAction(quit_action)
@@ -132,7 +132,7 @@ def main() -> None:
     ptt.start()
 
     def check_reminders() -> None:
-        """Pop up anything that is due (also ones missed while Zavero was closed)."""
+        """Pop up anything that is due (also ones missed while Minku was closed)."""
         fired = orch.reminders.due()
         if not fired:
             return
@@ -175,7 +175,7 @@ def main() -> None:
     tick.timeout.connect(lambda: None)
     tick.start(200)
 
-    print("Zavero is running. Hold Right Ctrl and speak. Esc = stop. Quit from the tray icon.", flush=True)
+    print("Minku is running. Hold Right Ctrl and speak. Esc = stop. Quit from the tray icon.", flush=True)
     app.exec()
     lock.unlock()
 

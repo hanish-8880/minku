@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 
 from PIL import Image
 
-from zavero import config
+from minku import config
 
 _dpi_set = False
 

@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QPointF
 
-from zavero.overlay import bezier, bezier_flight, partial_markup, smoothstep
-from zavero.phrases import POINT_LABELS, point_label
+from minku.overlay import bezier, bezier_flight, partial_markup, smoothstep
+from minku.phrases import POINT_LABELS, point_label
 
 
 def test_flight_curve():

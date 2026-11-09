@@ -1,6 +1,6 @@
 import pytest
 
-from zavero import actionlog
+from minku import actionlog
 
 
 @pytest.fixture(autouse=True)

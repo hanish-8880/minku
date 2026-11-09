@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 
 from openai import APIConnectionError, APIStatusError, APITimeoutError
 
-from zavero import config
-from zavero.driver import Shot
+from minku import config
+from minku.driver import Shot
 
 SYSTEM = """You help a beginner on an Indian user's Windows computer.
 Sometimes the user performs your actions themselves, so always check the new screenshot to see what really happened.

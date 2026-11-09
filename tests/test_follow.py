@@ -5,7 +5,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PyQt6.QtCore import QPointF  # noqa: E402
 from PyQt6.QtWidgets import QApplication  # noqa: E402
 
-from zavero.overlay import Overlay  # noqa: E402
+from minku.overlay import Overlay  # noqa: E402
 
 app = QApplication.instance() or QApplication([])
 

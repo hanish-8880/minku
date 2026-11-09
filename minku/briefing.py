@@ -6,7 +6,7 @@ three things that matter, in the user's language. Also runs once by itself each 
 import json
 from datetime import date, datetime, timedelta
 
-from zavero import config, reminders
+from minku import config, reminders
 
 TRIGGERS = [
     "what matters", "what's important", "whats important", "what is important", "what needs my attention",
@@ -18,7 +18,7 @@ TRIGGERS = [
 STATE = config.ROOT / "data" / "state.json"
 
 SYSTEM = (
-    "You are Zavero, a warm helper for a beginner computer user in India. Write their briefing for a small "
+    "You are Minku, a warm helper for a beginner computer user in India. Write their briefing for a small "
     "chat bubble. Pick only what really matters (at most 3 points): things due today, people waiting for an "
     "answer, deadlines, bills. Skip ads, newsletters and anything that can wait; if you skipped some, say "
     "in a few words that the rest can wait. If nothing matters, say so happily.\n"
@@ -61,7 +61,7 @@ def gather(store: reminders.Reminders, gmail=None, now: datetime | None = None) 
     if gmail is None:
         lines.append("Email: not connected")
         return "\n".join(lines)
-    from zavero.messaging.gmail import QUERY, headers
+    from minku.messaging.gmail import QUERY, headers
 
     res = gmail.users().messages().list(userId="me", q=QUERY.replace("newer_than:2d", "newer_than:1d"),
                                         maxResults=8).execute()

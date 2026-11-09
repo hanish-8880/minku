@@ -1,6 +1,6 @@
 from PIL import Image
 
-from zavero.driver import Shot, map_key, resize_for_model, to_screen
+from minku.driver import Shot, map_key, resize_for_model, to_screen
 
 
 def test_resize_1920_to_1280():

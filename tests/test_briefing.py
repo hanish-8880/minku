@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from zavero.briefing import gather, is_briefing
-from zavero.reminders import Reminders
+from minku.briefing import gather, is_briefing
+from minku.reminders import Reminders
 
 
 def test_triggers():
     for t in ["what matters today", "What needs my attention right now?", "ivala emi undi",
-              "ఈరోజు ఏమి ఉంది", "aaj kya zaroori hai", "आज क्या है", "good morning zavero"]:
+              "ఈరోజు ఏమి ఉంది", "aaj kya zaroori hai", "आज क्या है", "good morning minku"]:
         assert is_briefing(t), t
     assert not is_briefing("open notepad")
 

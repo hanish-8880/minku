@@ -5,8 +5,8 @@ import re
 from datetime import date, timedelta
 from pathlib import Path
 
-from zavero import coach, driver, research, skills
-from zavero.coach import Coach, Goals, clean_step, is_continue, is_goal, keys_match, norm_keys, pynput_name, to_actions
+from minku import coach, driver, research, skills
+from minku.coach import Coach, Goals, clean_step, is_continue, is_goal, keys_match, norm_keys, pynput_name, to_actions
 
 from test_interrupt import FakeUI
 
@@ -196,7 +196,7 @@ def test_resume_picks_the_unfinished_goal(tmp_path):
 
 def test_engine_code_knows_no_app():
     """App knowledge lives only in skills/*.md: the engine files must not name any app or field."""
-    root = Path(__file__).resolve().parent.parent / "zavero"
+    root = Path(__file__).resolve().parent.parent / "minku"
     code = "".join((root / f).read_text(encoding="utf-8").lower() for f in ("coach.py", "skills.py", "research.py"))
     for app in ["canva", "blender", "excel", "apspdcl", "irctc", "figma", "photoshop", "youtube", "whatsapp",
                 "linkedin", "notepad", "pixelpad", "tunebox", "tiffin"]:

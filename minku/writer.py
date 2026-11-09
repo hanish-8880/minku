@@ -1,14 +1,14 @@
 """Writes posts for social sites: "post this on LinkedIn", "linkedin lo post chey", "X pe post karo".
 
-Zavero writes the post (Muse Spark, with the screen as context), shows it in the bubble, and only after a
+Minku writes the post (Muse Spark, with the screen as context), shows it in the bubble, and only after a
 spoken yes opens the site in do mode, pastes it and stops before the final Post button (safety.py asks).
 """
 import re
 from pathlib import Path
 
-from zavero import config
-from zavero.driver import Shot
-from zavero.reminders import extract_json
+from minku import config
+from minku.driver import Shot
+from minku.reminders import extract_json
 
 PLATFORMS = {
     "linkedin": (r"linked ?in|లింక్డ్ ?ఇన్|लिंक्ड ?इन", "https://www.linkedin.com/feed/", "Start a post"),
@@ -17,7 +17,7 @@ PLATFORMS = {
 }
 POST_WORDS = r"\bpost|\btweet|\bshare|\bpettu|\bdaalo|\bdal do|పోస్ట్|పెట్టు|पोस्ट|डालो|शेयर"
 SHOT_WORDS = r"screenshot|this screen|my screen|this image|this photo|స్క్రీన్|ఫోటో|स्क्रीन|फोटो"
-SHOTS_DIR = Path.home() / "Zavero" / "shots"
+SHOTS_DIR = Path.home() / "Minku" / "shots"
 
 STYLE = {
     "linkedin": "LinkedIn post: a strong first hook line, 3-5 short paragraphs, warm and professional, "

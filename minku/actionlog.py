@@ -1,9 +1,9 @@
-"""Append-only log of everything Zavero does: logs/actions.jsonl."""
+"""Append-only log of everything Minku does: logs/actions.jsonl."""
 import json
 import threading
 import time
 
-from zavero import config
+from minku import config
 
 _PATH = config.LOG_DIR / "actions.jsonl"
 _lock = threading.Lock()
@@ -19,10 +19,10 @@ def log(event: str, **data) -> None:
 
 FEEDBACK = config.LOG_DIR / "feedback.jsonl"
 VERSION = "0.9-hackathon"
-# Only words clearly about Zavero itself: "ee site lo problem undi" is a request for help, not a bug report.
+# Only words clearly about Minku itself: "ee site lo problem undi" is a request for help, not a bug report.
 FEEDBACK_WORDS = r"report (a )?bug|bug report|send feedback|give feedback|feedback (ivvali|ista|dena|deni)|" \
-                 r"zavero (lo|mein|me|ki|ko|is|has)\b.{0,20}(problem|bug|dikkat|samasya|issue)|" \
-                 r"zavero (not working|is broken)|జవేరో.{0,15}సమస్య|ज़वेरो.{0,15}(दिक्कत|समस्या)"
+                 r"minku (lo|mein|me|ki|ko|is|has)\b.{0,20}(problem|bug|dikkat|samasya|issue)|" \
+                 r"minku (not working|is broken)|మింకు.{0,15}సమస్య|मिंकू.{0,15}(दिक्कत|समस्या)"
 
 
 def feedback(words: str) -> None:

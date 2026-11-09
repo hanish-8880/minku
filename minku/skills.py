@@ -1,4 +1,4 @@
-"""Skills: what Zavero knows about apps and goals, as plain markdown files in skills/*.md.
+"""Skills: what Minku knows about apps and goals, as plain markdown files in skills/*.md.
 
 Nothing in the code is about one app or one field; all of that lives in these files. Format:
 
@@ -12,7 +12,7 @@ Nothing in the code is about one app or one field; all of that lives in these fi
     ## Shortcuts
     ...
 
-Zavero writes new skill files itself after reading official help pages (research.py), refreshes them
+Minku writes new skill files itself after reading official help pages (research.py), refreshes them
 after 60 days, and appends what worked when a goal finishes.
 """
 import re
@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from zavero import config
+from minku import config
 
 DIR = config.ROOT / "skills"
 STALE_DAYS = 60

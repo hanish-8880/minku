@@ -33,7 +33,7 @@ MAX_TALK_S = 15  # recording stops by itself after this
 SAMPLE_RATE = 24_000
 LANGUAGE_BIAS = ["English", "Telugu", "Hindi"]
 # Words the speech model should expect (biases recognition; Oct 28 "APSPDCL" came out as "minus AB square").
-ASR_KEYWORDS = ["Zavero", "APSPDCL", "APEPDCL", "TGSPDCL", "current bill", "service number", "Quick Pay",
+ASR_KEYWORDS = ["Minku", "APSPDCL", "APEPDCL", "TGSPDCL", "current bill", "service number", "Quick Pay",
                 "Canva", "Gmail", "Chrome", "WhatsApp", "Notepad", "nuvve chey", "kar do", "do it for me",
                 "remind me", "gurthu", "yaad dilana", "ayindi", "ho gaya"]
 

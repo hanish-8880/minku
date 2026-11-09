@@ -1,4 +1,4 @@
-from zavero import config
+from minku import config
 
 
 def test_one_shared_client(monkeypatch):

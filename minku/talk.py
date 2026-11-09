@@ -10,10 +10,10 @@ import re
 
 from PIL import Image, ImageDraw
 
-from zavero import config, highlight
-from zavero.narrator import SEED, STYLE
-from zavero.driver import Shot, crop_png
-from zavero.reminders import extract_json
+from minku import config, highlight
+from minku.narrator import SEED, STYLE
+from minku.driver import Shot, crop_png
+from minku.reminders import extract_json
 
 # A question about what is on screen (not a request to do something).
 QUESTION = [
@@ -26,7 +26,7 @@ QUESTION = [
 # Code / app errors: explain them and, in VS Code, jump to the broken line.
 ERROR = [r"\berror", r"\beror", r"\btraceback", r"\bexception", r"\bbug\b", r"\bcrash", r"\bfail(ed|ing|s)?\b",
          r"not working", r"\bwrong\b", r"\bpani cheyyatledu", r"\bkaam nahi", r"ఎర్రర్", r"एरर", r"गलती"]
-# A picture on screen the user wants explained: Zavero enlarges it and draws numbered marks on it.
+# A picture on screen the user wants explained: Minku enlarges it and draws numbered marks on it.
 DIAGRAM = [r"diagram", r"\bchart", r"\bgraph", r"\bfigure", r"flow ?chart", r"\bpicture", r"\bimage\b",
            r"\bdrawing", r"\bmap\b", r"\bequation", r"\bformula", r"\bslide\b", r"\bboard\b",
            r"డయాగ్రామ్", r"చిత్రం", r"బొమ్మ", r"आरेख", r"चित्र", r"डायग्राम", r"\bbomma\b", r"\bchitra"]
@@ -41,7 +41,7 @@ EXPLAIN = [r"\bexplain", r"\bdraw\b", r"\bunderstand", r"\bdoubt", r"\bwhat\b", 
 TASK = [r"\bhow (do|can|to)\b", r"\bopen\b", r"\bela\b", r"\bkaise\b", r"\bkaro\b", r"\bchey", r"कैसे", r"ఎలా"]
 
 SYSTEM = (
-    "You are Zavero, a patient helper for a beginner computer user in India. The user asked a question about "
+    "You are Minku, a patient helper for a beginner computer user in India. The user asked a question about "
     "their screen. The red circle marks their mouse pointer: 'this' or 'here' usually means the thing under or "
     "next to it. Reply with ONLY one JSON object:\n"
     '{"answer": str, "point": {"x": int, "y": int} | null, "label": str}\n'
@@ -53,7 +53,7 @@ SYSTEM = (
     "- Language of answer: {lang}."
 )
 SYSTEM_ERROR = (
-    "You are Zavero, a patient coding teacher for a beginner in India. The user has an error on their screen "
+    "You are Minku, a patient coding teacher for a beginner in India. The user has an error on their screen "
     "(terminal traceback, red underline, Problems panel, browser console, or an app's error box). Read it "
     "carefully. Reply with ONLY one JSON object:\n"
     '{"answer": str, "point": {"x": int, "y": int} | null, "goto": {"file": str, "line": int} | null}\n'
@@ -67,7 +67,7 @@ SYSTEM_ERROR = (
     "- Language of answer: {lang}. Keep code, file names and error names in English."
 )
 SYSTEM_LINE = (
-    "You are Zavero, a patient coding teacher. The editor now shows {file} at line {line}, where this error "
+    "You are Minku, a patient coding teacher. The editor now shows {file} at line {line}, where this error "
     "happens: {error}\nReply with ONLY one JSON object: "
     '{"answer": str, "point": {"x": int, "y": int} | null}\n'
     "- point: screenshot pixel centre of line {line}'s code in the editor (the highlighted line).\n"
@@ -78,7 +78,7 @@ LANG_NAME = {"te": "Telugu (Telugu script)", "hi": "Hindi (Devanagari)", "en": "
 
 
 SYSTEM_DRAW = (
-    "You are Zavero, a patient teacher for a beginner in India. The user wants you to explain something by "
+    "You are Minku, a patient teacher for a beginner in India. The user wants you to explain something by "
     "drawing, step by step, like a teacher with coloured pens. Choose ONE mode:\n"
     "A) annotate: a diagram, chart, slide or picture on their screen (often a paused YouTube video) is what "
     "they ask about (the red circle is their mouse pointer, usually on or near it). Draw on an enlarged copy.\n"
@@ -121,7 +121,7 @@ COLORS = ("red", "blue", "green", "orange", "purple")
 
 
 SYSTEM_3D = (
-    "You are Zavero, a patient teacher for a beginner in India. Explain the user's topic with a small 3D model "
+    "You are Minku, a patient teacher for a beginner in India. Explain the user's topic with a small 3D model "
     "built from simple shapes, revealed step by step like a teacher building it on the table.\n"
     "Reply with ONLY one JSON object:\n"
     '{"title": str, "answer": str, "parts": [{"shape": "sphere" | "box" | "cylinder" | "cone" | "torus" | "tube", '
@@ -206,7 +206,7 @@ def answer_3d(question: str, user_lang: str = "en") -> dict:
 
 
 SYSTEM_CIRCLE = (
-    "You are Zavero, a patient teacher for a beginner in India. While asking, the user drew a loop with their "
+    "You are Minku, a patient teacher for a beginner in India. While asking, the user drew a loop with their "
     "mouse around one part of their screen (the red loop in the first image; the second image is a sharp "
     "close-up of what is inside it). {context}They want THAT part explained. Reply with ONLY JSON: "
     '{"answer": str, "label": str}\n'

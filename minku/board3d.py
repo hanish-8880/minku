@@ -1,7 +1,7 @@
 """The 3D board: a rotating teaching model (talk.clean_scene) on a white rounded card over the desktop.
 
 A frameless, always-on-top web view (transparent window, white card inside) running three.js (bundled in
-zavero/web, works offline). The camera fits the whole model inside the card.
+minku/web, works offline). The camera fits the whole model inside the card.
 Parts appear step by step; the bubble explains the current step. Next -> (bubble button, the page's own
 button, or saying next / inka / aage) shows the next step; the model also moves on by itself every AUTO_S.
 Drag = turn, scroll = zoom, Esc / ✕ = close. Create and use it only in the GUI thread (Overlay does).

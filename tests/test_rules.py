@@ -1,5 +1,5 @@
-from zavero.orchestrator import classify
-from zavero.safety import risky_reason, secret_reason
+from minku.orchestrator import classify
+from minku.safety import risky_reason, secret_reason
 
 
 def test_classify_commands():
@@ -25,12 +25,12 @@ def test_classify_tasks():
 
 
 def test_conversation_memory():
-    from zavero.orchestrator import Orchestrator
+    from minku.orchestrator import Orchestrator
 
     o = Orchestrator.__new__(Orchestrator)  # no listeners/UI needed for this
     assert o._with_context("i want to pay current bill") == "i want to pay current bill"
     o._remember("user", "i want to pay current bill")
-    o._remember("zavero", "Which electricity company? (APSPDCL, APEPDCL...)")
+    o._remember("minku", "Which electricity company? (APSPDCL, APEPDCL...)")
     task = o._with_context("APSPDCL")
     assert "pay current bill" in task and "Which electricity company" in task
     assert task.endswith("The user now says: APSPDCL")
@@ -39,7 +39,7 @@ def test_conversation_memory():
 def test_answer_keeps_do_mode():
     import time
 
-    from zavero.orchestrator import Orchestrator
+    from minku.orchestrator import Orchestrator
 
     o = Orchestrator.__new__(Orchestrator)
     o.mode = "do"

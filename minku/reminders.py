@@ -9,7 +9,7 @@ import threading
 import uuid
 from datetime import datetime, timedelta
 
-from zavero import config
+from minku import config
 
 # Any of these (as a substring) means the user is talking about a reminder, not a screen task.
 TRIGGERS = [
@@ -22,7 +22,7 @@ FILE = config.ROOT / "data" / "reminders.json"
 TIME_FMT = "%Y-%m-%dT%H:%M"
 
 SYSTEM = (
-    "You turn what a user said into a reminder for Zavero, a friendly helper for beginner computer users in India. "
+    "You turn what a user said into a reminder for Minku, a friendly helper for beginner computer users in India. "
     "Reply with ONLY one JSON object, no other text:\n"
     '{"action": "add" | "list" | "none", "title": str, "when": "YYYY-MM-DDTHH:MM", '
     '"repeat": "none" | "daily" | "weekly" | "yearly", "confirm": str, "alert": str}\n'

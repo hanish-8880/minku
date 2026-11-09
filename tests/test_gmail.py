@@ -1,7 +1,7 @@
 import base64
 from email import message_from_bytes
 
-from zavero.messaging.gmail import body_text, reply_raw
+from minku.messaging.gmail import body_text, reply_raw
 
 
 def b64(s: str) -> str:

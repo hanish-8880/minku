@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from openai import APIStatusError
 
-from zavero import config
+from minku import config
 
 SYSTEM = (
     "You write one short instruction for a beginner computer user in India. "
